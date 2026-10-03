@@ -1,0 +1,13 @@
+{
+  "name": "backbone-plugin",
+  "version": "1.0.0",
+  "description": "Backbone — adaptive orchestration plugin for coding agents. Node scripts and tests; no runtime dependencies.",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node --test tests/unit.test.js tests/cli.test.js tests/hooks.test.js"
+  }
+}

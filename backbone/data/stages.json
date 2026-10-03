@@ -1,0 +1,322 @@
+{
+  "version": 1,
+  "tiers": {
+    "T1": { "label": "Hackathon/Buildathon", "timeframe": "Hours", "typical_output": "One-page opportunity statement, working demo, pitch", "ceremony": "Near zero" },
+    "T2": { "label": "Solo long-term", "timeframe": "Weeks–months", "typical_output": "Validated concept, locked scope, DB+env+guide", "ceremony": "Light, self-paced" },
+    "T3": { "label": "Small team", "timeframe": "Weeks–months", "typical_output": "Full validation set, module PRDs, shared docs", "ceremony": "Medium" },
+    "T4": { "label": "Client/industry", "timeframe": "Months+", "typical_output": "Sourced market sizing, stakeholder-mapped, compliance-aware", "ceremony": "Full" }
+  },
+  "applicability_values": {
+    "active": "Stage runs at this tier.",
+    "conditional": "Stage runs only when its condition holds (stated in the depth note).",
+    "skip": "Stage does not run at this tier."
+  },
+  "cross_cutting": [
+    {
+      "name": "Adversarial pass (Section 2)",
+      "skill": "adversarial-review",
+      "tiers": ["T1", "T2", "T3", "T4"],
+      "rule": "Every AI-generated plan, canvas, architecture choice, or scope gets one explicit self-critique (weakest assumption, most likely failure, at least one alternative framing, conflicts with earlier evidence) and explicit user sign-off before it is locked into master-prd.md."
+    }
+  ],
+  "stages": [
+    {
+      "id": 0,
+      "key": "intake-triage",
+      "name": "Intake & Triage",
+      "skill": "triage",
+      "documents": ["state.md"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "Classify tier; set active stages." },
+        "T2": { "applicability": "active", "depth": "Classify tier; set active stages." },
+        "T3": { "applicability": "active", "depth": "Classify tier; set active stages." },
+        "T4": { "applicability": "active", "depth": "Classify tier; set active stages." }
+      },
+      "frameworks": [
+        { "name": "Tier classification (timeframe, team size, real external stakeholder/client, judged/pitched)", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "Bootstrap mode (reverse-triage of an existing/half-built project)", "tiers": ["T1", "T2", "T3", "T4"], "condition": "No state.md found and existing code detected." },
+        { "name": "Re-triage", "tiers": ["T1", "T2", "T3", "T4"], "condition": "User explicitly says the project has changed scope." }
+      ]
+    },
+    {
+      "id": 1,
+      "key": "problem-identification",
+      "name": "Problem Identification",
+      "skill": "problem-framing",
+      "documents": ["problem.md", "brief.md"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "5W2H anchored to a real, lived situation." },
+        "T2": { "applicability": "active", "depth": "5W2H + JTBD core job statement; HMW if still fuzzy." },
+        "T3": { "applicability": "active", "depth": "5W2H + JTBD core job statement; HMW if still fuzzy." },
+        "T4": { "applicability": "active", "depth": "5W2H + JTBD core job statement; HMW if still fuzzy." }
+      },
+      "frameworks": [
+        { "name": "Real-situation anchor (what actual experience surfaced this)", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "5W2H (What/Who/When/Where/Why/How/How much)", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "JTBD core job statement", "tiers": ["T2", "T3", "T4"] },
+        { "name": "HMW (How Might We) reframing", "tiers": ["T2", "T3", "T4"], "condition": "Problem statement is still fuzzy." }
+      ]
+    },
+    {
+      "id": 2,
+      "key": "competitive-research",
+      "name": "Proactive/Competitive Research",
+      "skill": "competitive-research",
+      "documents": ["problem.md"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "2-minute check: has this exact thing been built?" },
+        "T2": { "applicability": "active", "depth": "Secondary research + real competitor table." },
+        "T3": { "applicability": "active", "depth": "Real competitor table + structured competitive analysis (company-research)." },
+        "T4": { "applicability": "active", "depth": "Real competitor table + structured competitive analysis (company-research)." }
+      },
+      "frameworks": [
+        { "name": "Idea-first prior-art check (run on the idea itself first, not just downstream products)", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "Secondary research + competitor feature table", "tiers": ["T2", "T3", "T4"] },
+        { "name": "Structured competitive analysis", "tiers": ["T3", "T4"], "compose": "company-research" }
+      ]
+    },
+    {
+      "id": 3,
+      "key": "challenge-validation",
+      "name": "Challenge & Validation",
+      "skill": "validation-composer",
+      "documents": ["validation.md"],
+      "tiers": {
+        "T1": { "applicability": "skip", "depth": "Not run at hackathon depth." },
+        "T2": { "applicability": "active", "depth": "Mom Test, Assumption Mapping + RAT, Opportunity Hypothesis, self-scored Customer Validation Score." },
+        "T3": { "applicability": "active", "depth": "T2 set + Pre-mortem, group-scored Customer Validation Score, Problem-Solution Fit check." },
+        "T4": { "applicability": "active", "depth": "T2 set + Pre-mortem, group-scored Customer Validation Score, Problem-Solution Fit check." }
+      },
+      "frameworks": [
+        { "name": "Mom Test", "tiers": ["T2", "T3", "T4"] },
+        { "name": "Assumption Mapping + Riskiest Assumption Test (RAT)", "tiers": ["T2", "T3", "T4"], "compose": "riskiest-assumption-test" },
+        { "name": "Validation canvas", "tiers": ["T2", "T3", "T4"], "compose": "validation-canvas" },
+        { "name": "Pre-mortem", "tiers": ["T3", "T4"] },
+        { "name": "Opportunity Hypothesis template", "tiers": ["T2", "T3", "T4"] },
+        { "name": "Customer Validation Score (self-scored at T2, group-scored at T3/T4)", "tiers": ["T2", "T3", "T4"] },
+        { "name": "Problem-Solution Fit check", "tiers": ["T3", "T4"] }
+      ]
+    },
+    {
+      "id": 4,
+      "key": "problem-solution-framing",
+      "name": "Problem & Solution Framing",
+      "skill": "solution-framing",
+      "documents": ["canvas.md"],
+      "tiers": {
+        "T1": { "applicability": "skip", "depth": "Not run at hackathon depth." },
+        "T2": { "applicability": "active", "depth": "Value Proposition Canvas + Lean Canvas (Problem, Customer Segments, UVP, Solution minimum)." },
+        "T3": { "applicability": "active", "depth": "Value Proposition Canvas + full Lean Canvas." },
+        "T4": { "applicability": "active", "depth": "Value Proposition Canvas + full Lean Canvas." }
+      },
+      "frameworks": [
+        { "name": "Value Proposition Canvas", "tiers": ["T2", "T3", "T4"] },
+        { "name": "Lean Canvas (minimum sections at T2, full canvas at T3+)", "tiers": ["T2", "T3", "T4"], "compose": "lean-canvas" },
+        { "name": "Lean UX Canvas", "tiers": ["T2", "T3", "T4"], "compose": "lean-ux-canvas", "condition": "Optional companion when the solution is UX-led." }
+      ]
+    },
+    {
+      "id": 5,
+      "key": "opportunity-prioritization",
+      "name": "Opportunity Structuring & Prioritization",
+      "skill": "opportunity-prioritization",
+      "documents": ["discovery-tree.md"],
+      "tiers": {
+        "T1": { "applicability": "skip", "depth": "Not run; MoSCoW happens in Stage 7." },
+        "T2": { "applicability": "conditional", "depth": "Only when there is more than one candidate solution or feature: Opportunity Score (default) or ICE." },
+        "T3": { "applicability": "active", "depth": "Opportunity Solution Tree; prioritize with Opportunity Score (default), ICE, or RICE for larger backlogs." },
+        "T4": { "applicability": "active", "depth": "Opportunity Solution Tree; RICE for larger backlogs, ICE for fast triage, Kano for delight-vs-satisfy." }
+      },
+      "frameworks": [
+        { "name": "Opportunity Solution Tree (outcome → opportunities → solutions → assumption tests)", "tiers": ["T3", "T4"], "compose": "opportunity-solution-tree" },
+        { "name": "Opportunity Score (Importance × (1 − Satisfaction))", "tiers": ["T2", "T3"], "condition": "More than one candidate solution or feature.", "compose": "prioritization-frameworks" },
+        { "name": "ICE (Impact × Confidence × Ease)", "tiers": ["T2", "T3", "T4"], "condition": "More than one candidate solution or feature.", "compose": "prioritization-frameworks" },
+        { "name": "RICE (Reach × Impact × Confidence ÷ Effort)", "tiers": ["T3", "T4"], "condition": "Larger backlog.", "compose": "prioritization-frameworks" },
+        { "name": "Kano model", "tiers": ["T4"], "condition": "Default at T4; at any active tier when UX differentiation matters.", "compose": "prioritization-frameworks" },
+        { "name": "MoSCoW (final scope-lock mechanism — executed in Stage 7)", "tiers": ["T1", "T2", "T3", "T4"] }
+      ]
+    },
+    {
+      "id": 6,
+      "key": "market-viability",
+      "name": "Market & Viability",
+      "skill": "viability",
+      "documents": ["viability.md"],
+      "tiers": {
+        "T1": { "applicability": "skip", "depth": "Skipped entirely at T1." },
+        "T2": { "applicability": "skip", "depth": "No viability framework applies below T3." },
+        "T3": { "applicability": "active", "depth": "Market type, buyer map, precise market definition, segmentation, competitor/alternative table, unit economics, light Bullseye; optional lightweight TAM/SAM/SOM." },
+        "T4": { "applicability": "active", "depth": "Full set; buyer/user/influencer/decision-maker/payer map mandatory; sourced TAM/SAM/SOM mandatory." }
+      },
+      "frameworks": [
+        { "name": "Market type identification (B2C/B2B/B2B2C/B2G/C2C/platform/etc.)", "tiers": ["T3", "T4"] },
+        { "name": "Buyer/User/Influencer/Decision-maker/Payer disambiguation (mandatory at T4)", "tiers": ["T3", "T4"] },
+        { "name": "Precise market definition (geography, population, need, category — never \"everyone\")", "tiers": ["T3", "T4"] },
+        { "name": "TAM/SAM/SOM with sourced assumptions (mandatory at T4; optional lightweight at T3)", "tiers": ["T3", "T4"] },
+        { "name": "Customer segmentation (demographic/geographic/psychographic/behavioural/need-based)", "tiers": ["T3", "T4"] },
+        { "name": "Competitor/alternative table incl. \"do nothing\" and manual-process alternatives", "tiers": ["T3", "T4"] },
+        { "name": "Unit economics (contribution margin, payback, break-even)", "tiers": ["T3", "T4"] },
+        { "name": "Bullseye channel prioritization (light)", "tiers": ["T3", "T4"] }
+      ]
+    },
+    {
+      "id": 7,
+      "key": "scope-lock",
+      "name": "Scope Lock",
+      "skill": "scope-lock",
+      "documents": ["master-prd.md"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "5-minute Must/Won't split." },
+        "T2": { "applicability": "active", "depth": "MoSCoW pass." },
+        "T3": { "applicability": "active", "depth": "MoSCoW; RICE/ICE numeric tie-breaking if the backlog is large." },
+        "T4": { "applicability": "active", "depth": "Full MoSCoW requirements pass; RICE/ICE numeric tie-breaking if the backlog is large." }
+      },
+      "frameworks": [
+        { "name": "MoSCoW", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "RICE/ICE numeric tie-breaking", "tiers": ["T3", "T4"], "condition": "Backlog large enough to need numeric tie-breaking.", "compose": "prioritization-frameworks" }
+      ]
+    },
+    {
+      "id": 8,
+      "key": "retention-engagement",
+      "name": "Retention & Engagement",
+      "skill": "retention",
+      "documents": ["retention.md"],
+      "tiers": {
+        "T1": { "applicability": "skip", "depth": "Skipped at T1." },
+        "T2": { "applicability": "active", "depth": "Light: Hook Model only." },
+        "T3": { "applicability": "active", "depth": "Hook Model + AARRR + North Star Metric; HEART if the team already has product-analytics maturity." },
+        "T4": { "applicability": "active", "depth": "Hook Model + AARRR + HEART + North Star Metric." }
+      },
+      "frameworks": [
+        { "name": "Hook Model (Trigger → Action → Variable Reward → Investment)", "tiers": ["T2", "T3", "T4"] },
+        { "name": "AARRR / Pirate Metrics", "tiers": ["T3", "T4"] },
+        { "name": "HEART framework", "tiers": ["T4"], "condition": "Also at T3 if the team already has product-analytics maturity." },
+        { "name": "North Star Metric (feeds the Opportunity Solution Tree's top node)", "tiers": ["T3", "T4"] }
+      ]
+    },
+    {
+      "id": 9,
+      "key": "technical-feasibility-architecture",
+      "name": "Technical Feasibility & Architecture",
+      "skill": "architecture-composer",
+      "documents": ["architecture.md"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "Informal feasibility lenses; mandatory real-vs-stubbed list." },
+        "T2": { "applicability": "active", "depth": "Feasibility lenses; lightweight ADRs; C4 Context only; real-vs-stubbed." },
+        "T3": { "applicability": "active", "depth": "Feasibility lenses; Build/Buy/Partner; ADRs; C4; real-vs-stubbed; module boundary map + interface contracts." },
+        "T4": { "applicability": "active", "depth": "Formal feasibility lenses; Build/Buy/Partner; formal ADRs; C4; real-vs-stubbed; module boundary map + interface contracts." }
+      },
+      "frameworks": [
+        { "name": "Feasibility lenses (technical, resource, timeline, risk) — formality scales by tier", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "Build vs. Buy vs. Partner", "tiers": ["T3", "T4"] },
+        { "name": "ADRs (lightweight at T2, formal at T4)", "tiers": ["T2", "T3", "T4"] },
+        { "name": "C4 Model (Context-only at T2; Context/Container/Component/Code at T3+)", "tiers": ["T2", "T3", "T4"] },
+        { "name": "What must be real vs. what can be stubbed (mandatory at T1)", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "Module boundary map + interface contracts + dependency graph", "tiers": ["T3", "T4"] }
+      ]
+    },
+    {
+      "id": 10,
+      "key": "work-packages-handoff",
+      "name": "Work Packages & Engineering Handoff",
+      "skill": "handoff-generator",
+      "documents": ["master-prd.md", "architecture.md", "work-packages.md", "modules/<name>.md", "migrations/", "prerequisites.md", ".env.example"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "master-prd.md + architecture.md + single work-packages.md; migrations if persistence; prerequisites + .env.example if external dependencies. Hand off to Spec Kit." },
+        "T2": { "applicability": "active", "depth": "master-prd.md + architecture.md + single work-packages.md; migrations if persistence; prerequisites + .env.example if external dependencies. Hand off to Spec Kit." },
+        "T3": { "applicability": "active", "depth": "master-prd.md + architecture.md (with claim/lock table) + per-module PRDs; migrations; prerequisites + .env.example. Hand off to BMAD or parallel subagents." },
+        "T4": { "applicability": "active", "depth": "master-prd.md + architecture.md (with claim/lock table) + per-module PRDs; migrations; prerequisites + .env.example. Hand off to BMAD or parallel subagents." }
+      },
+      "frameworks": [
+        { "name": "master-prd.md (non-negotiables)", "tiers": ["T1", "T2", "T3", "T4"], "compose": "prd-development" },
+        { "name": "architecture.md (multi-agent parts at T3+)", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "Single work-packages.md", "tiers": ["T1", "T2"] },
+        { "name": "Per-module PRDs (modules/<name>.md)", "tiers": ["T3", "T4"] },
+        { "name": "SQL migration files (ordered, commented, constraints/indexes)", "tiers": ["T1", "T2", "T3", "T4"], "condition": "Project has a persistence layer." },
+        { "name": "Credentials/prerequisites list + .env.example", "tiers": ["T1", "T2", "T3", "T4"], "condition": "Project has any external dependency." },
+        { "name": "Verification gates (Given/When/Then + named gate per requirement)", "tiers": ["T1", "T2", "T3", "T4"], "compose": "validation-first" }
+      ]
+    },
+    {
+      "id": 11,
+      "key": "success-rubric-evals",
+      "name": "Success Rubric & Evals",
+      "skill": "success-rubric",
+      "documents": ["master-prd.md", "work-packages.md", "modules/<name>.md"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "Acceptance criteria (Given/When/Then) + Definition of Done." },
+        "T2": { "applicability": "active", "depth": "Acceptance criteria (Given/When/Then) + Definition of Done." },
+        "T3": { "applicability": "active", "depth": "Acceptance criteria + Definition of Done + qualitative checklist." },
+        "T4": { "applicability": "active", "depth": "Acceptance criteria + Definition of Done + qualitative checklist." }
+      },
+      "frameworks": [
+        { "name": "Acceptance Criteria (Given/When/Then)", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "Definition of Done", "tiers": ["T1", "T2", "T3", "T4"] },
+        { "name": "Qualitative checklist (clarity, evidence, feasibility, failure modes)", "tiers": ["T3", "T4"] }
+      ]
+    },
+    {
+      "id": 12,
+      "key": "packaging",
+      "name": "Packaging",
+      "skill": "packaging",
+      "documents": ["packaging.md"],
+      "tiers": {
+        "T1": { "applicability": "active", "depth": "Reverse-engineer from the judging rubric; Hook → Solution → Live demo → Tech+impact → Close; recorded backup." },
+        "T2": { "applicability": "active", "depth": "Lighter positioning/differentiation pass; narrative for a demo or landing page." },
+        "T3": { "applicability": "active", "depth": "Lighter positioning/differentiation pass; narrative for a demo or landing page." },
+        "T4": { "applicability": "active", "depth": "Proper GTM/positioning work; stakeholder-specific narrative." }
+      },
+      "frameworks": [
+        { "name": "Judging-rubric reverse-engineering + pitch structure", "tiers": ["T1"] },
+        { "name": "Positioning/differentiation + demo/landing narrative", "tiers": ["T2", "T3"] },
+        { "name": "GTM/positioning + stakeholder-specific narrative", "tiers": ["T4"] }
+      ]
+    },
+    {
+      "id": 13,
+      "key": "feedback-loop",
+      "name": "Feedback Loop",
+      "skill": "feedback-loop",
+      "documents": ["feedback-log.md", "validation.md", "discovery-tree.md"],
+      "tiers": {
+        "T1": { "applicability": "skip", "depth": "Feedback loop applies after ship at T2+." },
+        "T2": { "applicability": "conditional", "depth": "After ship: weekly real-user touchpoints, re-score Customer Validation Score, re-run the relevant discovery branch." },
+        "T3": { "applicability": "conditional", "depth": "After ship: weekly real-user touchpoints toward the North Star Metric, re-score Customer Validation Score, re-run the relevant OST branch." },
+        "T4": { "applicability": "conditional", "depth": "After ship: weekly real-user touchpoints toward the North Star Metric, re-score Customer Validation Score, re-run the relevant OST branch." }
+      },
+      "frameworks": [
+        { "name": "Scheduled post-ship checkpoint (default weekly)", "tiers": ["T2", "T3", "T4"], "condition": "Project has shipped." },
+        { "name": "Customer Validation Score re-score with real data", "tiers": ["T2", "T3", "T4"], "condition": "Project has shipped." },
+        { "name": "Opportunity Solution Tree branch re-run", "tiers": ["T2", "T3", "T4"], "condition": "Project has shipped.", "compose": "opportunity-solution-tree" }
+      ]
+    }
+  ],
+  "documents": [
+    { "file": "state.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "Project-level tier + per-stage completion status." },
+    { "file": "brief.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "One-page compressed opportunity statement." },
+    { "file": "problem.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "5W2H, JTBD, HMW — raw problem-framing groundwork (Stage 2 prior-art findings recorded here too)." },
+    { "file": "validation.md", "tiers": ["T2", "T3", "T4"], "purpose": "Mom Test notes, Opportunity Hypothesis block, full Customer Validation Score with reasoning per sub-score." },
+    { "file": "canvas.md", "tiers": ["T2", "T3", "T4"], "purpose": "Filled Lean Canvas / Value Proposition Canvas." },
+    { "file": "discovery-tree.md", "tiers": ["T3", "T4"], "purpose": "Opportunity Solution Tree — living file with change history; also the feedback-loop mechanism." },
+    { "file": "viability.md", "tiers": ["T3", "T4"], "purpose": "Market type, buyer/user/payer map, sourced TAM/SAM/SOM, segmentation, competitor table, unit economics." },
+    { "file": "retention.md", "tiers": ["T2", "T3", "T4"], "purpose": "Hook Model, AARRR/HEART reasoning behind the North Star Metric." },
+    { "file": "decision-log.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "Chronological why-record, including adversarial passes and interface freezes." },
+    { "file": "packaging.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "Pitch/rubric mapping (T1) or positioning notes (T2–4)." },
+    { "file": "feedback-log.md", "tiers": ["T2", "T3", "T4"], "purpose": "Dated post-ship entries: what users said, updated score, resulting discovery-tree changes." },
+    { "file": "master-prd.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "The non-negotiables." },
+    { "file": "architecture.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "ADRs, C4, real-vs-stubbed; module boundary map, interface contracts, dependency graph, claim/lock table at T3+." },
+    { "file": "work-packages.md", "tiers": ["T1", "T2"], "purpose": "Single work-package file when only one agent is working." },
+    { "file": "modules/<name>.md", "tiers": ["T3", "T4"], "purpose": "Self-contained per-module PRD." },
+    { "file": "migrations/", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "Ordered, commented SQL migrations.", "condition": "Project has a persistence layer." },
+    { "file": "prerequisites.md", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "Credentials/prerequisites list.", "condition": "Project has any external dependency." },
+    { "file": ".env.example", "tiers": ["T1", "T2", "T3", "T4"], "purpose": "Every environment variable, no real values (project root).", "condition": "Project has any external dependency." }
+  ],
+  "handoff": {
+    "T1": "spec-kit",
+    "T2": "spec-kit",
+    "T3": "bmad-or-parallel-subagents",
+    "T4": "bmad-or-parallel-subagents"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "backbone",
+  "owner": {
+    "name": "JKP"
+  },
+  "metadata": {
+    "description": "Backbone — adaptive orchestration for coding agents, from vague idea to locked, parallel-safe engineering handoff."
+  },
+  "plugins": [
+    {
+      "name": "backbone",
+      "source": "./",
+      "description": "Adaptive orchestration for coding agents: depth-tiered discovery and validation, a locked master PRD, module boundaries with claim/lock and verification gates for parallel agents, and a post-ship feedback loop.",
+      "version": "1.0.0",
+      "author": {
+        "name": "JKP"
+      },
+      "license": "MIT",
+      "category": "workflow",
+      "keywords": [
+        "product-discovery",
+        "validation",
+        "prd",
+        "scope",
+        "architecture",
+        "multi-agent",
+        "orchestration",
+        "spec-driven-development"
+      ]
+    }
+  ]
+}
