@@ -66,5 +66,7 @@ executed from the project root; `manual:` lines can only be confirmed by the use
 ```backbone-gates
 # G1
 # npm test -- tests/{{MODULE}}
+# UI modules: fail on colours that bypass design.md tokens (runs without a shell, any OS):
+# backbone: tokens --audit src/{{MODULE}}
 manual: <!-- what a human must verify, if anything -->
 ```

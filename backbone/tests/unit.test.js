@@ -43,9 +43,13 @@ test('tier gating matches the spec: validation and viability are off at the low 
   assert.strictEqual(t1[5], 'skip');
   assert.strictEqual(t1[6], 'skip', 'Stage 6 viability is skipped entirely at T1');
   assert.strictEqual(t1[8], 'skip');
-  assert.strictEqual(t1[13], 'skip');
+  assert.strictEqual(t1[15], 'skip', 'the feedback loop is T2+');
   assert.strictEqual(t1[7], 'active', 'MoSCoW scope lock fires at every tier');
-  assert.strictEqual(t1[12], 'active');
+  assert.strictEqual(t1[14], 'active', 'packaging (the pitch) fires at T1');
+  assert.strictEqual(t1[13], 'active', 'release & operations (the demo plan) fires at T1');
+  for (const tier of stages.TIERS) {
+    assert.strictEqual(byId(tier)[9], 'conditional', `experience & design runs only when there is a UI (${tier})`);
+  }
 
   const t2 = byId('T2');
   assert.strictEqual(t2[6], 'skip', 'no viability framework applies below T3');
@@ -64,9 +68,16 @@ test('frameworks are filtered by tier', () => {
   assert.ok(names('T1', 1).some((n) => n.startsWith('5W2H')));
   assert.ok(!names('T1', 1).some((n) => n.includes('JTBD')), 'JTBD is T2+');
   assert.ok(names('T2', 1).some((n) => n.includes('JTBD')));
-  assert.ok(names('T3', 9).some((n) => n.includes('C4')), 'C4 applies at T3');
-  assert.ok(!names('T1', 9).some((n) => n.includes('ADR')), 'ADRs are T2+');
-  assert.ok(names('T1', 9).some((n) => n.includes('stubbed')), 'real-vs-stubbed is mandatory at T1');
+  assert.ok(names('T3', 10).some((n) => n.includes('C4')), 'C4 applies at T3');
+  assert.ok(!names('T1', 10).some((n) => n.includes('ADR')), 'ADRs are T2+');
+  assert.ok(names('T1', 10).some((n) => n.includes('stubbed')), 'real-vs-stubbed is mandatory at T1');
+  assert.ok(names('T2', 10).some((n) => n.includes('Threat model')), 'the threat model is T2+');
+  assert.ok(!names('T1', 10).some((n) => n.includes('Threat model')));
+  assert.ok(names('T4', 10).some((n) => n.includes('Compliance')), 'compliance mapping is T4');
+  assert.ok(names('T1', 9).some((n) => n.includes('contrast')), 'contrast is checked at every tier');
+  assert.ok(!names('T2', 9).some((n) => n.includes('Component inventory')), 'component inventory is T3+');
+  assert.ok(names('T1', 13).some((n) => n.includes('Demo run plan')));
+  assert.ok(names('T4', 13).some((n) => n.includes('SLOs')));
   assert.ok(names('T4', 8).some((n) => n.includes('HEART')));
   assert.ok(!names('T3', 8).some((n) => n.includes('HEART')), 'HEART is T4 (or T3 by condition)');
 });
@@ -132,13 +143,37 @@ test('re-triage downward keeps completed work and closes unstarted stages', () =
   assert.strictEqual(s.stages[3].status, 'skipped');
 });
 
-test('nextStage skips closed stages and holds Stage 13 until ship', () => {
+test('nextStage skips closed stages and holds the feedback loop until ship', () => {
   const s = stateLib.createState({ project: 'p', tier: 'T2', mode: 'greenfield', reason: 'solo' });
   for (const stage of s.stages) if (stage.applicability !== 'skip') stage.status = 'done';
-  assert.strictEqual(stateLib.nextStage(s), null, 'Stage 13 is not offered before ship');
-  s.stages[13].status = 'not-started';
+  assert.strictEqual(stateLib.nextStage(s), null, 'the feedback loop is not offered before ship');
+  s.stages[15].status = 'not-started';
   s.shipped_at = '2026-09-01';
-  assert.strictEqual(stateLib.nextStage(s).id, 13);
+  assert.strictEqual(stateLib.nextStage(s).id, 15);
+});
+
+test('a state written by Backbone 1.0 (14 stages) migrates without losing work', () => {
+  // Rebuild a v1 state: drop the two stages added in v2 and renumber, as 1.0 wrote it.
+  const v2 = stateLib.createState({ project: 'p', tier: 'T3', mode: 'greenfield', reason: 'team' });
+  const v1 = JSON.parse(JSON.stringify(v2));
+  v1.backbone_version = 1;
+  v1.stages = v1.stages.filter((s) => !['experience-design', 'release-ops'].includes(s.skill)).map((s, i) => ({ ...s, id: i }));
+  assert.strictEqual(v1.stages.length, 14);
+  v1.stages[9].status = 'done'; // architecture-composer was Stage 9 in v1
+  v1.stages[9].notes = 'ADR-001 accepted';
+
+  const s = stateLib.parseState(`# Backbone State\n\n\`\`\`backbone-state\n${JSON.stringify(v1, null, 2)}\n\`\`\`\n`);
+  assert.strictEqual(s.backbone_version, stateLib.STATE_VERSION);
+  assert.strictEqual(s.stages.length, 16);
+  assert.ok(s.stages.every((st, i) => st.id === i));
+  const arch = s.stages.find((st) => st.skill === 'architecture-composer');
+  assert.strictEqual(arch.id, 10);
+  assert.strictEqual(arch.status, 'done');
+  assert.strictEqual(arch.notes, 'ADR-001 accepted');
+  assert.strictEqual(s.stages[9].skill, 'experience-design');
+  assert.strictEqual(s.stages[9].status, 'not-started');
+  assert.match(s.stages[9].notes, /Added by a Backbone update/);
+  assert.strictEqual(s.stages[13].skill, 'release-ops');
 });
 
 /* ------------------------------------------------------------------ modules */

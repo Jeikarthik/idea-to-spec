@@ -47,6 +47,9 @@ It is 12 months from now and this failed. Why?
 
 Mitigations that change the plan: <!-- fill -->
 
+Every failure reason above becomes a row in `risks.md` (`backbone.js scaffold risks`) — the pre-mortem
+seeds the risk register, which Stage 13 reviews before release.
+
 ## Problem-Solution Fit check (T3+)
 
 <!-- fill: does the proposed solution address the validated pain, for the validated segment,

@@ -8,7 +8,9 @@
  */
 
 const fs = require('fs');
+const path = require('path');
 const { readStdinJson, readText, timestamp } = require('../../scripts/lib/io');
+const { parseTokens } = require('../../scripts/lib/design');
 const { isDisabled } = require('../../scripts/lib/switch');
 const { projectDir, docsDir, docPaths, modulePrdPath } = require('../../scripts/lib/paths');
 const { readState } = require('../../scripts/lib/state');
@@ -88,7 +90,22 @@ function ownershipContext({ name, mod, modules, docs, owner }) {
     manual.length ? `6. Manual gates (only the user can confirm these; report evidence for each): ${manual.join('; ')}.` : '6. No manual gates.',
     `7. End your final message with [bb:${name}] and a gate-by-gate report (Given/When/Then criterion → evidence).`,
     modules.length > 1 ? `Other modules in flight must not be touched: ${modules.filter((m) => m.name !== name).map((m) => m.name).join(', ')}.` : '',
+    mod.ui ? designContext(docs) : '',
   ].filter(Boolean).join('\n');
+}
+
+/** UI modules get the design tokens as binding rules, so parallel agents share one palette. */
+function designContext(docs) {
+  const file = path.join(docs, 'design.md');
+  let tokens = null;
+  try { tokens = parseTokens(readText(file) || ''); } catch { /* reported by check */ }
+  if (!tokens) return `8. This is a UI module but ${file} has no valid backbone-tokens block — report that as a spec defect before styling anything.`;
+  const names = (group) => Object.keys(tokens[group] || {}).join(', ');
+  return [
+    `8. Design is locked in ${file} (master-prd.md §8). Use only its tokens — via the exported CSS variables (var(--color-<name>), var(--space-<n>), …) — never raw hex colours or ad-hoc sizes:`,
+    `   colours: ${names('color')}${tokens.color_dark ? ' (light + dark)' : ''}; type: ${names('type_scale') || 'see design.md'}; spacing: ${names('space') || 'see design.md'}; radius: ${names('radius') || 'see design.md'}.`,
+    '   Build the user flows and the loading/empty/error states exactly as design.md describes. If a token you need is missing, stop and report it — tokens change only through Stage 9.',
+  ].join('\n');
 }
 
 function main() {

@@ -1,9 +1,9 @@
 ---
 name: feedback-loop
-description: Stage 13 — the post-ship checkpoint: collect real reactions from actual users, re-score the Customer Validation Score with real data, and re-run the relevant discovery-tree branch to choose the next iteration. Use after shipping at T2+, on the weekly cadence, or when the session reports a feedback checkpoint is due.
+description: Stage 15 — the post-ship checkpoint: collect real reactions from actual users, re-score the Customer Validation Score with real data, and re-run the relevant discovery-tree branch to choose the next iteration. Use after shipping at T2+, on the weekly cadence, or when the session reports a feedback checkpoint is due.
 ---
 
-# Stage 13 — Feedback Loop
+# Stage 15 — Feedback Loop
 
 **T2+, after ship.** A scheduled checkpoint, not a one-time stage. The point is not automating validation
 — that is impossible — it is making sure the process does not quietly skip *collecting* real signal once
@@ -50,7 +50,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" feedback-due
    If the decision changes the locked scope, that is a Stage 7 change: adversarial pass, sign-off,
    updated `master-prd.md`. If it changes the tier (a side project acquiring a paying client), re-triage.
 
-6. **Leave the loop open.** Stage 13 does not close permanently — set it back to `in-progress` after each
+6. **Leave the loop open.** Stage 15 does not close permanently — set it back to `in-progress` after each
    checkpoint, or `done` only when the project genuinely stops.
 
 ## Push-back checklist

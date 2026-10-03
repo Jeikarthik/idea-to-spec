@@ -1,9 +1,9 @@
 ---
 name: handoff-generator
-description: Stage 10 — produce the locked engineering handoff: master-prd.md, architecture.md, per-module PRDs (T3+) or work-packages.md (T1/T2), SQL migrations, prerequisites and .env.example, each with verification gates — then route execution to Spec Kit (T1/T2) or BMAD/parallel subagents (T3/T4).
+description: Stage 11 — produce the locked engineering handoff: master-prd.md, architecture.md, per-module PRDs (T3+) or work-packages.md (T1/T2), SQL migrations, prerequisites and .env.example, each with verification gates — then route execution to Spec Kit (T1/T2) or BMAD/parallel subagents (T3/T4).
 ---
 
-# Stage 10 — Work Packages & Engineering Handoff
+# Stage 11 — Work Packages & Engineering Handoff
 
 Backbone's locked artifact contract. This is the output everything upstream was for: a spec an agent can
 execute without re-deriving context, and without colliding with another agent.
@@ -67,10 +67,10 @@ it launders unverified work as done.
 ```
 node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" check
 node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" modules
-node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" stage 10 done
+node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" stage 11 done
 ```
 
-`stage 10 done` refuses while a PRD section is unsigned, a module PRD lacks gates or Given/When/Then,
+`stage 11 done` refuses while a PRD section is unsigned, a module PRD lacks gates or Given/When/Then,
 the module map overlaps, or `.env.example` holds something that looks like a real secret.
 
 ## 6. Route the execution (Section 8)

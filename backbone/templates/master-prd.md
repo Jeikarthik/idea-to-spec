@@ -81,3 +81,14 @@ Sign-off: DL-###
 **Success rubric:** <!-- fill: how this is judged — clarity, evidence, feasibility, failure modes at T3+; the judging rubric at T1. -->
 
 Sign-off: DL-###
+
+## 8. Design Non-Negotiables
+
+<!-- fill: the rules every UI module obeys, or "No user-facing UI — reason". Typically:
+     - Design tokens in design.md (backbone-tokens) are the only source of colour, type, spacing, radius
+       and motion; no raw hex in components (gate: `backbone: tokens --audit <paths>`).
+     - Every declared colour pair meets WCAG contrast (4.5:1 text, 3:1 large/UI); the target is WCAG 2.2 AA.
+     - Loading, empty and error states are designed for every screen in design.md.
+     - Project-specific: brand rules, voice and tone, supported locales. -->
+
+Sign-off: DL-###

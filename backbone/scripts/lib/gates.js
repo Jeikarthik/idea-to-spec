@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const { spawnSync } = require('child_process');
 const { findBlocks } = require('./markdown');
 
@@ -29,17 +30,22 @@ function tail(text, max) {
   return text.length > max ? `…${text.slice(-max)}` : text;
 }
 
+const CLI = path.join(__dirname, '..', 'backbone.js');
+const BUILTIN_RE = /^backbone:\s*(.+)$/i;
+
+/**
+ * Run each gate. A line of the form "backbone: <command> <args>" runs the Backbone CLI directly
+ * (no shell, so it behaves the same on every OS), e.g. "backbone: tokens --audit src/ui".
+ * Arguments are split on whitespace; quote-free paths only.
+ */
 function runGates(commands, { cwd, timeoutSec = 300, outputLimit = 1500 } = {}) {
   const results = commands.map((command) => {
     const started = Date.now();
-    const r = spawnSync(command, {
-      cwd,
-      shell: true,
-      encoding: 'utf8',
-      timeout: timeoutSec * 1000,
-      maxBuffer: 16 * 1024 * 1024,
-      windowsHide: true,
-    });
+    const builtin = command.match(BUILTIN_RE);
+    const opts = { cwd, encoding: 'utf8', timeout: timeoutSec * 1000, maxBuffer: 16 * 1024 * 1024, windowsHide: true };
+    const r = builtin
+      ? spawnSync(process.execPath, [CLI, ...builtin[1].trim().split(/\s+/), '--project', cwd || process.cwd()], opts)
+      : spawnSync(command, { ...opts, shell: true });
     const timedOut = Boolean(r.error && r.error.code === 'ETIMEDOUT');
     return {
       command,

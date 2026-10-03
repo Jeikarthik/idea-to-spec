@@ -2,7 +2,7 @@
 
 **Tier:** {{TIER}} · **Last updated:** {{DATE}}
 
-A living file, not a one-time diagram. It is revisited every time real signal arrives (Stage 13),
+A living file, not a one-time diagram. It is revisited every time real signal arrives (Stage 15),
 and its change history is part of the record.
 
 ## Desired outcome

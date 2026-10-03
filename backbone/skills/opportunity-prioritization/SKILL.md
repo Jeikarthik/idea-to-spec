@@ -21,7 +21,7 @@ Desired outcome → customer opportunities → candidate solutions → assumptio
 - **Opportunities are customer needs in the customer's words**, taken from `validation.md` — not feature
   names with the word "opportunity" in front.
 - Every candidate solution gets at least one assumption test with a pre-committed pass/fail line.
-- This is a living file. Record what changed and why in its change history — it is the same file Stage 13
+- This is a living file. Record what changed and why in its change history — it is the same file Stage 15
   re-runs after ship.
 
 ## 2. Prioritization

@@ -13,7 +13,7 @@ Ids are sequential: DL-001, DL-002, … Entries are appended below this line; th
 ## DL-001 — {{DATE}} — <title>
 
 - Type: adversarial-review
-- Stage: <0-13>
+- Stage: <0-15>
 - Subject: <what was reviewed: the scope lock, a canvas, an architecture choice, a plan>
 - Weakest assumption: <the one most likely to be wrong>
 - Most likely failure: <how this actually fails in practice>

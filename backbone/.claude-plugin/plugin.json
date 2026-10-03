@@ -1,10 +1,10 @@
 {
   "name": "backbone",
   "displayName": "Backbone",
-  "description": "Adaptive orchestration for coding agents: takes an idea from vague thought to implementation-ready spec plus locked, parallel-safe engineering artifacts, scaling depth to the context (hackathon, solo build, small team, client/industry).",
-  "version": "1.0.0",
+  "description": "Adaptive orchestration for coding agents: takes an idea from vague thought to a validated, designed, implementation-ready spec with locked, parallel-safe engineering artifacts and a release plan, scaling depth to the context (hackathon, solo build, small team, client/industry).",
+  "version": "1.1.0",
   "author": {
-    "name": "JKP"
+    "name": "Jeikarthik"
   },
   "license": "MIT",
   "keywords": [
@@ -17,6 +17,10 @@
     "orchestration",
     "spec-driven-development",
     "hackathon",
-    "verification-gates"
+    "verification-gates",
+    "design-system",
+    "design-tokens",
+    "accessibility",
+    "release"
   ]
 }

@@ -22,6 +22,7 @@ const triage = require('./lib/triage');
 const detect = require('./lib/detect');
 const { feedbackStatus } = require('./lib/feedback');
 const switchLib = require('./lib/switch');
+const designLib = require('./lib/design');
 const { readText, writeFileAtomic, today, timestamp } = require('./lib/io');
 const { replaceRegion } = require('./lib/markdown');
 
@@ -51,6 +52,9 @@ Usage: node backbone.js <command> [args] [--project <dir>]
   verify --wp <id|all> [--confirm-manual]
   cvs [--write]
   check
+  tokens [--tier T1..T4] [--json]                      validate design.md tokens + WCAG contrast table
+  tokens --css <file>                                  export tokens as CSS custom properties
+  tokens --audit <path> [<path>...]                    fail on colour literals that bypass the tokens (use as a gate)
   disable [--global] [--days <n>] [--reason <text>]   stop switch (project, or every project)
   enable [--global]
   switch [--json]                                      is Backbone on or off here, and why`;
@@ -220,7 +224,8 @@ function enforceClose(ctx, state, id, flags) {
   const fail = (msgs) => {
     throw new UsageError(`Cannot mark Stage ${id} done:\n${msgs.map((m) => `- ${m}`).join('\n')}`);
   };
-  if (id === 3) {
+  const key = stages.stageById(id).key;
+  if (key === 'challenge-validation') {
     const { error, result } = lint.evaluateCvs(ctx.docs, state.tier);
     if (error) fail([error]);
     if (result.verdict !== 'pass') {
@@ -230,19 +235,31 @@ function enforceClose(ctx, state, id, flags) {
       return `Override: ${flags.override}`;
     }
   }
-  if (id === 7) {
+  if (key === 'scope-lock') {
     const errs = lint.checkMasterPrd(ctx.docs, entries, { onlyHeading: /scope/i });
     if (errs.length) fail(errs);
   }
-  if (id === 10) {
+  if (key === 'experience-design') {
+    const { errors } = lint.checkDesign(ctx.docs, state.tier);
+    if (errors.length) fail([...errors, `No user-facing UI? Close it with: stage ${id} skipped --note "<why there is no UI>"`]);
+  }
+  if (key === 'technical-feasibility-architecture') {
+    const errs = lint.checkSecurity(ctx.docs, state.tier);
+    if (errs.length) fail(errs);
+  }
+  if (key === 'work-packages-handoff') {
     const errs = [...lint.checkMasterPrd(ctx.docs, entries), ...lint.checkWorkUnits(ctx.docs, state.tier).errors, ...lint.checkEnvExample(ctx.project)];
     if (errs.length) fail(errs);
   }
-  if (id === 11) {
+  if (key === 'success-rubric-evals') {
     const errs = lint.checkWorkUnits(ctx.docs, state.tier).errors;
     if (errs.length) fail(errs);
   }
-  if (id === 13 && !state.shipped_at) fail(['Project has not shipped; the feedback loop starts after ship.']);
+  if (key === 'release-operations') {
+    const errs = lint.checkRelease(ctx.docs, state.tier);
+    if (errs.length) fail(errs);
+  }
+  if (key === 'feedback-loop' && !state.shipped_at) fail(['Project has not shipped; the feedback loop starts after ship.']);
   return '';
 }
 
@@ -250,7 +267,8 @@ function cmdStage({ positional, flags }) {
   const ctx = context(flags);
   const [idRaw, status] = positional;
   const id = Number(idRaw);
-  if (!Number.isInteger(id) || id < 0 || id > 13) throw new UsageError('stage <id> must be 0–13.');
+  const last = stages.stageCount() - 1;
+  if (!Number.isInteger(id) || id < 0 || id > last) throw new UsageError(`stage <id> must be 0–${last}.`);
   if (!status) throw new UsageError('stage <id> <status> requires a status.');
   stateLib.assertStatus(status);
   const state = loadStateOrFail(ctx);
@@ -278,11 +296,16 @@ function cmdShip({ flags }) {
   const date = typeof flags.date === 'string' ? flags.date : today();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new UsageError('--date must be YYYY-MM-DD.');
   state.shipped_at = date;
-  if (state.tier !== 'T1' && state.stages[13].status === 'not-started') {
-    state.stages[13].notes = `Shipped ${date}; weekly checkpoints begin.`;
+  const feedback = state.stages[stages.idOf('feedback-loop')];
+  if (state.tier !== 'T1' && feedback.status === 'not-started') {
+    feedback.notes = `Shipped ${date}; weekly checkpoints begin.`;
   }
   stateLib.writeState(ctx.p.state, state);
-  process.stdout.write(`Recorded ship date ${date}.${state.tier === 'T1' ? ' (Feedback loop does not apply at T1.)' : ' Feedback checkpoints are now scheduled.'}\n`);
+  const release = state.stages[stages.idOf('release-operations')];
+  const warn = ['done', 'skipped'].includes(release.status)
+    ? ''
+    : `\nWarning: Stage ${release.id} (${release.name}) is ${release.status} — shipping without a rollback plan or demo backup is a choice worth logging in decision-log.md.`;
+  process.stdout.write(`Recorded ship date ${date}.${state.tier === 'T1' ? ' (Feedback loop does not apply at T1.)' : ' Feedback checkpoints are now scheduled.'}${warn}\n`);
 }
 
 function cmdFeedbackDue({ flags }) {
@@ -447,6 +470,57 @@ function cmdCheck({ flags }) {
   if (errors.length) process.exitCode = 1;
 }
 
+function loadTokens(ctx) {
+  const file = path.join(ctx.docs, 'design.md');
+  const md = readText(file);
+  if (md === null) throw new UsageError(`No design.md at ${file}. Run "scaffold design" first (Stage 9).`);
+  const tokens = designLib.parseTokens(md);
+  if (!tokens) throw new UsageError('design.md has no ```backbone-tokens block.');
+  return tokens;
+}
+
+/** tokens: validate + contrast table; --css <file>: export; --audit <paths…>: find colours that bypass the tokens. */
+function cmdTokens({ positional, flags }) {
+  const ctx = context(flags);
+  const tokens = loadTokens(ctx);
+  if (flags.audit !== undefined) {
+    const targets = [...(typeof flags.audit === 'string' ? [flags.audit] : []), ...positional];
+    if (!targets.length) throw new UsageError('tokens --audit needs at least one path, e.g. tokens --audit src/ui');
+    const findings = designLib.auditColors(targets, tokens, { cwd: ctx.project });
+    if (!findings.length) {
+      process.stdout.write(`PASS — no colour literals outside the design tokens in ${targets.join(', ')}.\n`);
+      return;
+    }
+    process.stdout.write([
+      `FAIL — ${findings.length} colour literal(s) bypass the design tokens:`,
+      ...findings.map((f) => `- ${f.file}:${f.line} ${f.value}`),
+      'Use the token (var(--color-…)) instead, add the colour to design.md through Stage 9, or mark a deliberate exception with a "token-ok" comment.',
+    ].join('\n') + '\n');
+    process.exitCode = 1;
+    return;
+  }
+  const state = stateLib.readState(ctx.p.state);
+  const tier = typeof flags.tier === 'string' ? flags.tier : state ? state.tier : 'T2';
+  const { errors, warnings, contrast } = designLib.validateTokens(tokens, tier);
+  if (typeof flags.css === 'string') {
+    if (errors.length) throw new UsageError(`Refusing to export invalid tokens:\n${errors.map((e) => `- ${e}`).join('\n')}`);
+    const dest = path.resolve(ctx.project, flags.css);
+    writeFileAtomic(dest, designLib.toCss(tokens));
+    process.stdout.write(`Wrote ${dest}\n`);
+    return;
+  }
+  const lines = [
+    errors.length ? `FAIL — ${errors.length} error(s) at ${tier}` : `PASS — tokens are valid at ${tier}`,
+    ...errors.map((e) => `- ERROR: ${e}`),
+    ...warnings.map((w) => `- WARN: ${w}`),
+  ];
+  if (contrast.length) {
+    lines.push('', 'Contrast:', ...contrast.map((r) => `- ${r.passed ? 'ok  ' : 'FAIL'} ${r.fg} on ${r.bg} (${r.palette}): ${r.ratio}:1 (needs ${r.min}:1, ${r.kind})`));
+  }
+  print({ tier, errors, warnings, contrast }, flags.json, lines.join('\n'));
+  if (errors.length) process.exitCode = 1;
+}
+
 function cmdDisable({ flags }) {
   const ctx = context(flags);
   const global = flags.global === true;
@@ -486,7 +560,7 @@ const COMMANDS = {
   status: cmdStatus, next: cmdNext,
   stage: cmdStage, ship: cmdShip, 'feedback-due': cmdFeedbackDue, scan: cmdScan, modules: cmdModules,
   claim: cmdClaim, release: cmdRelease, verify: cmdVerify, cvs: cmdCvs, check: cmdCheck,
-  disable: cmdDisable, enable: cmdEnable, switch: cmdSwitch,
+  tokens: cmdTokens, disable: cmdDisable, enable: cmdEnable, switch: cmdSwitch,
 };
 
 function main(argv) {

@@ -1,0 +1,2 @@
+# Keep LF everywhere: templates and tests parse line endings, and the plugin runs on every OS.
+* text=auto eol=lf

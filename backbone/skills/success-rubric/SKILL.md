@@ -1,9 +1,9 @@
 ---
 name: success-rubric
-description: Stage 11 — write Given/When/Then acceptance criteria and a Definition of Done for every requirement (all tiers), plus a qualitative checklist at T3+, and wire each criterion to the gate that verifies it. Use alongside or right after the engineering handoff.
+description: Stage 12 — write Given/When/Then acceptance criteria and a Definition of Done for every requirement (all tiers), wire each criterion to the gate that verifies it, add a test strategy (T2+) and a qualitative checklist (T3+). Use alongside or right after the engineering handoff.
 ---
 
-# Stage 11 — Success Rubric & Evals
+# Stage 12 — Success Rubric & Evals
 
 Every tier. This is what makes "done" mean something: a criterion nobody can verify is an opinion.
 
@@ -51,10 +51,24 @@ Beyond the pass/fail gates, judge the artifacts themselves:
 - **Feasibility** — does the plan fit the timeframe and the team from Stage 0?
 - **Failure modes** — are they named, with the behaviour on failure specified?
 
-## 5. Close
+## 5. Test strategy (T2+) — `scaffold test-strategy`
+
+The gates prove each unit; the strategy makes them add up. Light at T2, full at T3+:
+
+- **Pyramid:** what is unit-tested, what is contract-tested against the interface contracts in
+  `architecture.md`, what is end-to-end, and what only a person can judge.
+- **Critical paths:** one end-to-end test per user flow in `design.md` (or per core job when there is no
+  UI), each naming the gate that runs it — so the flows the design promised are the flows CI proves.
+- **Test data** (never real personal data), the **coverage bar**, and the **abuse cases** from
+  `security.md` as tests (T3+).
+- **Deliberately not tested** — an honest list beats a silent gap.
+
+`check` warns if Stage 12 closes at T2+ without `test-strategy.md`.
+
+## 6. Close
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" stage 11 done
+node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" stage 12 done
 ```
 
 Refuses while any module PRD or work package lacks Given/When/Then criteria, a Definition of Done, or

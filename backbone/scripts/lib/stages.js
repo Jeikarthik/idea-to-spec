@@ -56,6 +56,21 @@ function stageById(id) {
   return load().stages.find((s) => s.id === id) || null;
 }
 
+function stageByKey(key) {
+  return load().stages.find((s) => s.key === key) || null;
+}
+
+/** Stage id for a stage key. Code refers to stages by key so adding a stage never silently re-targets a rule. */
+function idOf(key) {
+  const stage = stageByKey(key);
+  if (!stage) throw new Error(`Unknown stage key "${key}".`);
+  return stage.id;
+}
+
+function stageCount() {
+  return load().stages.length;
+}
+
 function tierInfo(tier) {
   assertTier(tier);
   return load().tiers[tier];
@@ -95,4 +110,6 @@ function renderPlan(tier) {
   return lines.join('\n');
 }
 
-module.exports = { TIERS, load, plan, documentsFor, stageById, tierInfo, tierRank, assertTier, handoffTarget, renderPlan };
+module.exports = {
+  TIERS, load, plan, documentsFor, stageById, stageByKey, idOf, stageCount, tierInfo, tierRank, assertTier, handoffTarget, renderPlan,
+};

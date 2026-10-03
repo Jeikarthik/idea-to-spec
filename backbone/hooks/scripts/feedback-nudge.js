@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * SessionStart: post-ship feedback nudge (Stage 13). Once a T2+ project has shipped, remind the
+ * SessionStart: post-ship feedback nudge (Stage 15). Once a T2+ project has shipped, remind the
  * session when a real-user checkpoint is due so deadline pressure does not quietly skip collecting signal.
  */
 

@@ -31,7 +31,7 @@ function classify({ timeframe, team, client, judged }) {
   if (timeframe === 'hours' || timeframe === 'days') {
     tier = 'T1';
     rationale.push(`Timeframe is ${timeframe}: hackathon/buildathon depth, near-zero ceremony.`);
-    if (isJudged) rationale.push('Being judged/pitched: Stage 12 packaging reverse-engineers the judging rubric.');
+    if (isJudged) rationale.push('Being judged/pitched: Stage 14 packaging reverse-engineers the judging rubric.');
     if (hasClient) tensions.push('A real external client on an hours/days timeframe: confirm this is a throwaway prototype and not a client deliverable (which would be T4).');
     if (teamSize > 1) rationale.push(`Team of ${teamSize}, but the timeframe dominates; one shared work-packages.md still suffices.`);
   } else if (hasClient) {
@@ -47,7 +47,7 @@ function classify({ timeframe, team, client, judged }) {
   }
 
   if (isJudged && tier !== 'T1') {
-    tensions.push(`Judged/pitched over ${timeframe}: Stage 12 at ${tier} does positioning, not rubric mapping; add rubric mapping to packaging.md if a judged event is the real deadline.`);
+    tensions.push(`Judged/pitched over ${timeframe}: Stage 14 at ${tier} does positioning, not rubric mapping; add rubric mapping to packaging.md if a judged event is the real deadline.`);
   }
 
   return { tier, rationale, tensions, inputs: { timeframe, team: teamSize, client: hasClient, judged: isJudged } };

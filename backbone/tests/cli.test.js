@@ -259,7 +259,7 @@ test('stage transitions are validated', (t) => {
   assert.match(h.cli(project, ['stage', '1', 'finished']).err, /Invalid stage status/);
   assert.match(h.cli(project, ['stage', '1', 'skipped']).err, /needs --note/);
   assert.strictEqual(h.cli(project, ['stage', '1', 'skipped', '--note', 'problem already framed in the brief']).code, 0);
-  assert.match(h.cli(project, ['stage', '99', 'done']).err, /must be 0–13/);
+  assert.match(h.cli(project, ['stage', '99', 'done']).err, /must be 0–15/);
   assert.match(h.cli(project, ['nonsense']).err, /Unknown command/);
 });
 

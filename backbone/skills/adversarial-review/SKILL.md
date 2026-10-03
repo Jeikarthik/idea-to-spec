@@ -60,7 +60,7 @@ in one entry; at T4 it is one entry per locked section.
 
 `backbone.js check` fails when a master-PRD section has no `Sign-off:` line, when the referenced entry
 does not exist, when it is not `Type: adversarial-review`, when any of the three critique fields is
-missing, or when `Signed off by` is still a placeholder. Stages 7 and 10 will not close until it passes.
+missing, or when `Signed off by` is still a placeholder. Stages 7 and 11 will not close until it passes.
 
 ## Overrides
 

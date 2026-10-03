@@ -19,7 +19,7 @@ function lastFeedbackDate(feedbackLogMd) {
 }
 
 /**
- * Whether a post-ship feedback checkpoint is due (Stage 13).
+ * Whether a post-ship feedback checkpoint is due (Stage 15).
  * Applies at T2+ once shipped; due when cadence days have passed since ship or the last logged touchpoint.
  */
 function feedbackStatus(state, feedbackLogMd, now = new Date()) {

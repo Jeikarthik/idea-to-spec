@@ -6,7 +6,8 @@ const { readText, writeFileAtomic, today } = require('./io');
 
 const STATUSES = ['not-started', 'in-progress', 'done', 'skipped', 'blocked', 'rework'];
 const MODES = ['greenfield', 'bootstrap'];
-const STAGE_COUNT = 14;
+/** Bumped whenever the stage list changes; older state files are migrated on read (see migrateState). */
+const STATE_VERSION = 2;
 
 function assertStatus(status) {
   if (!STATUSES.includes(status)) {
@@ -21,7 +22,7 @@ function createState({ project, tier, mode, reason, now = new Date() }) {
   if (!reason || !String(reason).trim()) throw new Error('A triage rationale (--reason) is required.');
   const date = today(now);
   return {
-    backbone_version: 1,
+    backbone_version: STATE_VERSION,
     project: String(project).trim(),
     tier,
     mode,
@@ -49,8 +50,9 @@ function validateState(state) {
   if (!state || typeof state !== 'object') return ['state is not an object'];
   if (!stages.TIERS.includes(state.tier)) problems.push(`invalid tier "${state.tier}"`);
   if (!MODES.includes(state.mode)) problems.push(`invalid mode "${state.mode}"`);
-  if (!Array.isArray(state.stages) || state.stages.length !== STAGE_COUNT) {
-    problems.push(`expected ${STAGE_COUNT} stages`);
+  const count = stages.stageCount();
+  if (!Array.isArray(state.stages) || state.stages.length !== count) {
+    problems.push(`expected ${count} stages`);
   } else {
     state.stages.forEach((s, i) => {
       if (s.id !== i) problems.push(`stage at position ${i} has id ${s.id}`);
@@ -77,9 +79,41 @@ function parseState(md) {
   } catch (err) {
     throw new Error(`state.md backbone-state block is not valid JSON: ${err.message}`);
   }
+  migrateState(state);
   const problems = validateState(state);
   if (problems.length) throw new Error(`state.md is invalid: ${problems.join('; ')}`);
   state.work_packages = state.work_packages || {};
+  return state;
+}
+
+/**
+ * Bring a state written by an older Backbone up to the current stage list. Stages are matched by
+ * skill (skills are stable across versions), so finished work keeps its status and notes; stages
+ * that did not exist before are added as not-started (or skipped when the tier skips them).
+ * Mutates and returns the state; a no-op for current states. Persisted on the next write.
+ */
+function migrateState(state, now = new Date()) {
+  if (!state || typeof state !== 'object' || !Array.isArray(state.stages)) return state;
+  if ((state.backbone_version || 1) >= STATE_VERSION) return state;
+  if (!stages.TIERS.includes(state.tier)) return state; // let validateState report it
+  const oldBySkill = new Map(state.stages.map((s) => [s.skill, s]));
+  const date = today(now);
+  state.stages = stages.plan(state.tier).map((p) => {
+    const old = oldBySkill.get(p.skill);
+    if (old) return { ...old, id: p.id, name: p.name, applicability: p.applicability, depth: p.depth };
+    const skipped = p.applicability === 'skip';
+    return {
+      id: p.id,
+      name: p.name,
+      skill: p.skill,
+      applicability: p.applicability,
+      depth: p.depth,
+      status: skipped ? 'skipped' : 'not-started',
+      updated: date,
+      notes: skipped ? `Not applicable at ${state.tier}.` : `Added by a Backbone update (state v${state.backbone_version || 1} → v${STATE_VERSION}).`,
+    };
+  });
+  state.backbone_version = STATE_VERSION;
   return state;
 }
 
@@ -177,12 +211,12 @@ function nextStage(state) {
   return state.stages.find((s) => {
     if (s.applicability === 'skip') return false;
     if (s.status === 'done' || s.status === 'skipped') return false;
-    if (s.id === 13 && !state.shipped_at) return false;
+    if (s.id === stages.idOf('feedback-loop') && !state.shipped_at) return false;
     return true;
   }) || null;
 }
 
 module.exports = {
-  STATUSES, MODES, createState, parseState, readState, renderState, writeState,
-  validateState, setStageStatus, retier, nextStage, assertStatus,
+  STATUSES, MODES, STATE_VERSION, createState, parseState, readState, renderState, writeState,
+  validateState, migrateState, setStageStatus, retier, nextStage, assertStatus,
 };

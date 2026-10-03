@@ -1,9 +1,9 @@
 ---
 name: packaging
-description: Stage 12 — package the work for its audience: reverse-engineer the judging rubric and build the pitch and demo at T1, a positioning and narrative pass at T2/T3, full GTM and stakeholder narrative at T4. Use before a demo, launch, or stakeholder review.
+description: Stage 14 — package the work for its audience: reverse-engineer the judging rubric and build the pitch and demo at T1, a positioning and narrative pass at T2/T3, full GTM and stakeholder narrative at T4. Use before a demo, launch, or stakeholder review.
 ---
 
-# Stage 12 — Packaging
+# Stage 14 — Packaging
 
 Branches hard by tier. Scaffold once: `scaffold packaging`.
 
@@ -48,5 +48,5 @@ review required before launch. Sourced numbers only — this audience checks.
 
 ## Close
 
-`stage 12 done`. If a claim in the pitch is not supported by anything in the documents, either get the
+`stage 14 done`. If a claim in the pitch is not supported by anything in the documents, either get the
 evidence or cut the claim; do not let the pitch quietly become the source of truth.

@@ -39,9 +39,11 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" <command>
    node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" stage <id> done
    ```
 
-   Stages 3, 7, 10 and 11 refuse to close until their evidence exists (validation score, signed-off
-   scope, module/work-package gates). That refusal is the product working; fix the gap rather than
-   working around it.
+   Seven stages refuse to close until their evidence exists: 3 (validation score), 7 (signed-off scope),
+   9 (valid, contrast-passing design tokens and user flows), 10 (security.md at T2+), 11 and 12
+   (module/work-package gates), 13 (release plan for the tier). That refusal is the product working;
+   fix the gap rather than working around it. Stage 9 is conditional: with no user-facing UI, close it
+   as `skipped --note "<why>"`.
 
 4. **Stage → skill map** (`plan` prints the full matrix for the current tier):
 
@@ -56,14 +58,17 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" <command>
    | 6 Market & Viability | `backbone:viability` |
    | 7 Scope Lock | `backbone:scope-lock` |
    | 8 Retention & Engagement | `backbone:retention` |
-   | 9 Technical Feasibility & Architecture | `backbone:architecture-composer` |
-   | 10 Work Packages & Engineering Handoff | `backbone:handoff-generator` |
-   | 11 Success Rubric & Evals | `backbone:success-rubric` |
-   | 12 Packaging | `backbone:packaging` |
-   | 13 Feedback Loop | `backbone:feedback-loop` |
+   | 9 Experience & Design | `backbone:experience-design` |
+   | 10 Technical Feasibility & Architecture | `backbone:architecture-composer` |
+   | 11 Work Packages & Engineering Handoff | `backbone:handoff-generator` |
+   | 12 Success Rubric & Evals | `backbone:success-rubric` |
+   | 13 Release & Operations | `backbone:release-ops` |
+   | 14 Packaging | `backbone:packaging` |
+   | 15 Feedback Loop | `backbone:feedback-loop` |
 
 5. **Between stages, check the documents**: `check` reports unsigned master-PRD sections, module map
-   errors, missing gates, and secrets that leaked into `.env.example`.
+   errors, missing gates, failing design tokens or contrast, missing security or release sections, and
+   secrets that leaked into `.env.example`.
 
 ## Standing rules
 
@@ -82,7 +87,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" <command>
 
 ## After the handoff
 
-Stage 10 produces the locked artifacts and routes execution: Spec Kit at T1/T2, BMAD or parallel
+Stage 11 produces the locked artifacts and routes execution: Spec Kit at T1/T2, BMAD or parallel
 subagents against the module PRDs at T3/T4. During parallel execution:
 
 - `modules` — dependency order and which modules are ready to start.

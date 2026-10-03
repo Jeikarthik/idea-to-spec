@@ -1,14 +1,15 @@
 ---
 name: architecture-composer
-description: Stage 9 — technical feasibility lenses, build vs buy vs partner, ADRs, C4, what must be real vs stubbed, and at T3+ the module boundary map, interface contracts and dependency graph that let several agents build in parallel. Use before work packages are generated.
+description: Stage 10 — technical feasibility lenses, build vs buy vs partner, ADRs, C4, what must be real vs stubbed, a threat model and security/privacy decisions (T2+), and at T3+ the module boundary map, interface contracts, dependency graph and domain glossary that let several agents build in parallel. Use before work packages are generated.
 ---
 
-# Stage 9 — Technical Feasibility & Architecture
+# Stage 10 — Technical Feasibility & Architecture
 
-Runs at every tier, scaled: informal feasibility plus a real-vs-stubbed list at T1; ADRs and C4-Context
-at T2; the full set plus the module boundary map at T3+.
+Runs at every tier, scaled: informal feasibility plus a real-vs-stubbed list at T1; ADRs, C4-Context and
+a threat model at T2; the full set plus the module boundary map, data classification and glossary at T3+;
+compliance mapping and run cost at T4.
 
-Scaffold once: `scaffold architecture`.
+Scaffold once: `scaffold architecture` (and `scaffold security` at T2+).
 
 ## 1. Feasibility lenses (all tiers)
 
@@ -66,14 +67,41 @@ way*, so a later agent does not relitigate it. `backbone.js modules` prints the 
 in that order; a module whose dependencies are unfrozen cannot be claimed, and the SubagentStart hook will
 stop an agent that tries.
 
-## 7. Close
+Mark modules that render user interface with `"ui": true`. Their agents are handed the design tokens from
+`design.md` (Stage 9) as binding rules when they start, and their gates should include
+`backbone: tokens --audit <their paths>` so a hard-coded colour fails the module.
 
-Adversarial pass on the stack and boundary decisions (the alternative framing question is where a simpler
-architecture usually appears), then:
+## 7. Security & privacy (T2+) — `scaffold security`
+
+Written now, while the boundaries are fresh — retrofitting a threat model after the build is how auth
+checks end up in the UI only.
+
+- **T2:** threat model (STRIDE-lite, one row per trust boundary from the C4 Context), secrets (where each
+  lives, who can read it), authentication and authorization (provider, session lifetime, where permission
+  checks run — server side, always).
+- **T3:** + data classification. If personal data is stored, fill the personal-data table too.
+- **T4:** + personal-data inventory with lawful basis, retention and deletion path; compliance mapping
+  (GDPR, HIPAA, SOC 2, PCI DSS, local law) with the obligations that actually shape the build.
+- Each abuse case becomes a test in `test-strategy.md`; each "every module must" rule goes into
+  `master-prd.md` §6 behind the adversarial pass.
+
+`stage 10 done` refuses at T2+ while `security.md` is missing or its required sections are unfilled.
+"Not applicable — reason" is a valid fill; a blank is not.
+
+## 8. Domain glossary (T3+) and run cost (T4)
+
+Fill the glossary in `architecture.md`: one name per concept, used identically in code, interfaces and UI
+copy. Parallel agents drift into synonyms fast; the glossary is cheaper than a rename later.
+At T4, every ADR states its **run cost** at expected load and what drives it — the client will ask.
+
+## 9. Close
+
+Adversarial pass on the stack, boundary and security decisions (the alternative framing question is where
+a simpler architecture usually appears), then:
 
 ```
 node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" modules
-node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" stage 9 done
+node "${CLAUDE_PLUGIN_ROOT}/scripts/backbone.js" stage 10 done
 ```
 
 ## Push-back checklist

@@ -4,10 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const { readText } = require('./io');
 const { sections, regionMarkers } = require('./markdown');
-const { docPaths, modulePrdPath } = require('./paths');
+const { PLUGIN_ROOT, docPaths, modulePrdPath } = require('./paths');
 const { parseModules, validateModules } = require('./modules');
 const { extractGates } = require('./gates');
 const cvs = require('./cvs');
+const design = require('./design');
+const { idOf } = require('./stages');
 
 const PLACEHOLDER_RE = /^(|tbd|todo|pending|n\/a|none|-|—|<.*>|\[.*\])$/i;
 const GWT_RE = /\bGiven\b[\s\S]*?\bWhen\b[\s\S]*?\bThen\b/;
@@ -158,6 +160,81 @@ function checkEnvExample(project) {
   return errors;
 }
 
+/**
+ * A level-2 section counts as filled when it exists, has real content once HTML comments are removed,
+ * and carries no leftover "<!-- fill" / TBD / TODO markers.
+ */
+function sectionFilled(md, headingRe) {
+  const sec = sections(stripFences(md), 2).find((s) => headingRe.test(s.heading));
+  if (!sec) return 'missing';
+  if (/<!--\s*fill|\bTBD\b|\bTODO\b/.test(sec.body)) return 'unfilled';
+  const content = sec.body.replace(/<!--[\s\S]*?-->/g, '').replace(/^\s*[|:\- ]+\s*$/gm, '').trim();
+  return content ? 'ok' : 'unfilled';
+}
+
+function requireSections(label, md, required) {
+  const errors = [];
+  for (const [re, name] of required) {
+    const state = sectionFilled(md, re);
+    if (state !== 'ok') errors.push(`${label} "${name}" section is ${state}`);
+  }
+  return errors;
+}
+
+let templatePalette;
+/** True when the light palette is byte-for-byte the neutral starter from templates/design.md. */
+function isTemplatePalette(tokens) {
+  if (templatePalette === undefined) {
+    try {
+      const t = design.parseTokens(readText(path.join(PLUGIN_ROOT, 'templates', 'design.md')) || '');
+      templatePalette = t ? JSON.stringify(t.color) : null;
+    } catch { templatePalette = null; }
+  }
+  return Boolean(templatePalette) && JSON.stringify(tokens.color) === templatePalette;
+}
+
+/** Stage 9: design.md must carry a valid, contrast-passing token block and the critical flows. */
+function checkDesign(docs, tier) {
+  const md = readText(path.join(docs, 'design.md'));
+  if (md === null) return { errors: ['design.md does not exist (scaffold design), or close Stage 9 as skipped with a note if there is no UI'], warnings: [] };
+  let tokens;
+  try {
+    tokens = design.parseTokens(md);
+  } catch (err) {
+    return { errors: [err.message], warnings: [] };
+  }
+  if (!tokens) return { errors: ['design.md has no ```backbone-tokens block'], warnings: [] };
+  const { errors, warnings } = design.validateTokens(tokens, tier);
+  if (isTemplatePalette(tokens)) {
+    errors.push('design.md still uses the template\'s placeholder palette — derive this project\'s palette from the Rationale');
+  }
+  errors.push(...requireSections('design.md', md, [[/user flows/i, 'User flows']]));
+  if (tier === 'T3' || tier === 'T4') errors.push(...requireSections('design.md', md, [[/component/i, 'Components and states']]));
+  return { errors: errors.map((e) => (e.startsWith('design.md') ? e : `design.md: ${e}`)), warnings: warnings.map((w) => `design.md: ${w}`) };
+}
+
+/** Stage 10 security depth: threat model from T2, data classification from T3, compliance at T4. */
+function checkSecurity(docs, tier) {
+  if (tier === 'T1') return [];
+  const md = readText(path.join(docs, 'security.md'));
+  if (md === null) return ['security.md does not exist (scaffold security) — the threat model is required from T2'];
+  const required = [[/threat model/i, 'Threat model'], [/secrets/i, 'Secrets'], [/auth/i, 'Authentication and authorization']];
+  if (tier === 'T3' || tier === 'T4') required.push([/data classification/i, 'Data classification']);
+  if (tier === 'T4') required.push([/personal data|PII/i, 'Personal data'], [/compliance/i, 'Compliance']);
+  return requireSections('security.md', md, required);
+}
+
+/** Stage 13: the demo plan at T1; CI and rollback from T2; runbook from T3; SLOs at T4. */
+function checkRelease(docs, tier) {
+  const md = readText(path.join(docs, 'release.md'));
+  if (md === null) return ['release.md does not exist (scaffold release)'];
+  if (tier === 'T1') return requireSections('release.md', md, [[/demo/i, 'Demo plan']]);
+  const required = [[/environments/i, 'Environments'], [/CI\/CD|pipeline/i, 'CI/CD'], [/rollback/i, 'Rollback'], [/observability/i, 'Observability']];
+  if (tier === 'T3' || tier === 'T4') required.push([/rollout/i, 'Rollout strategy'], [/runbook/i, 'Runbook']);
+  if (tier === 'T4') required.push([/SLO/i, 'SLOs and incidents']);
+  return requireSections('release.md', md, required);
+}
+
 function evaluateCvs(docs, tier) {
   const md = readText(docPaths(docs).validation);
   if (md === null) return { error: 'validation.md does not exist' };
@@ -171,25 +248,35 @@ function checkProject({ project, docs, state }) {
   const errors = [];
   const warnings = [];
   const entries = parseDecisionLog(readText(docPaths(docs).decisionLog) || '');
-  const byId = new Map(state.stages.map((s) => [s.id, s]));
-  const reached = (id) => ['done', 'rework'].includes(byId.get(id).status);
+  const byKey = (key) => state.stages[idOf(key)];
+  const reached = (key) => ['done', 'rework'].includes(byKey(key).status);
 
-  if (reached(3)) {
+  if (reached('challenge-validation')) {
     const { error, result } = evaluateCvs(docs, state.tier);
-    if (error) errors.push(`Stage 3 is closed but ${error}`);
+    if (error) errors.push(`Stage ${idOf('challenge-validation')} is closed but ${error}`);
     else if (result.verdict !== 'pass') {
-      const override = /Override:\s*(DL-\d{3,})/.exec(byId.get(3).notes || '');
+      const override = /Override:\s*(DL-\d{3,})/.exec(byKey('challenge-validation').notes || '');
       const overrideErr = override ? checkDecisionRef(entries, override[1], 'override') : 'no signed-off override recorded';
       if (overrideErr) errors.push(`Customer Validation Score is BLOCKED (${result.blocking.length} flag(s)) and ${overrideErr}`);
       else warnings.push(`Customer Validation Score is BLOCKED but overridden by ${override[1]}`);
     }
   }
   if (fs.existsSync(docPaths(docs).masterPrd)) errors.push(...checkMasterPrd(docs, entries));
-  if (reached(10)) {
+  if (reached('experience-design')) {
+    const d = checkDesign(docs, state.tier);
+    errors.push(...d.errors);
+    warnings.push(...d.warnings);
+  }
+  if (reached('technical-feasibility-architecture')) errors.push(...checkSecurity(docs, state.tier));
+  if (reached('work-packages-handoff')) {
     const units = checkWorkUnits(docs, state.tier);
     errors.push(...units.errors);
     warnings.push(...units.warnings);
   }
+  if (reached('success-rubric-evals') && state.tier !== 'T1' && readText(path.join(docs, 'test-strategy.md')) === null) {
+    warnings.push(`Stage ${idOf('success-rubric-evals')} is closed but test-strategy.md does not exist`);
+  }
+  if (reached('release-operations')) errors.push(...checkRelease(docs, state.tier));
   errors.push(...checkEnvExample(project));
   for (const [id, entry] of entries) {
     const type = (entry.fields.type || '').toLowerCase();
@@ -200,5 +287,6 @@ function checkProject({ project, docs, state }) {
 
 module.exports = {
   stripFences, parseDecisionLog, checkDecisionRef, checkMasterPrd, checkWorkUnits, checkEnvExample, evaluateCvs, checkProject,
+  sectionFilled, checkDesign, checkSecurity, checkRelease,
   GWT_RE,
 };

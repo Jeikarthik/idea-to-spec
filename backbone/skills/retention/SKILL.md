@@ -43,7 +43,7 @@ One outcome metric that goes up only when customers actually got value. Not a va
 - Name the input metrics that move it.
 - Run the **gaming check**: how could this metric rise while customers are worse off? Name the guardrail.
 - It becomes the top node of `discovery-tree.md` (Stage 5) and §7 of `master-prd.md`, and it is what the
-  Stage 13 feedback loop measures against.
+  Stage 15 feedback loop measures against.
 
 ## 5. Close
 

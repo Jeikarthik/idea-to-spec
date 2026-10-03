@@ -1,7 +1,7 @@
 {
   "name": "backbone",
   "owner": {
-    "name": "JKP"
+    "name": "Jeikarthik"
   },
   "metadata": {
     "description": "Backbone — adaptive orchestration for coding agents, from vague idea to locked, parallel-safe engineering handoff."
@@ -10,10 +10,10 @@
     {
       "name": "backbone",
       "source": "./",
-      "description": "Adaptive orchestration for coding agents: depth-tiered discovery and validation, a locked master PRD, module boundaries with claim/lock and verification gates for parallel agents, and a post-ship feedback loop.",
-      "version": "1.0.0",
+      "description": "Adaptive orchestration for coding agents: depth-tiered discovery and validation, a locked design system with contrast-checked tokens, a locked master PRD, module boundaries with claim/lock and verification gates for parallel agents, a release plan, and a post-ship feedback loop.",
+      "version": "1.1.0",
       "author": {
-        "name": "JKP"
+        "name": "Jeikarthik"
       },
       "license": "MIT",
       "category": "workflow",

@@ -1,0 +1,27 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: node ${{ matrix.node }} · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+      - name: Every stage has a skill and every template is registered
+        run: node -e "const s=require('./scripts/lib/stages');const fs=require('fs');for(const st of s.load().stages){if(!fs.existsSync('skills/'+st.skill+'/SKILL.md'))throw new Error('missing skill '+st.skill)}const t=require('./scripts/lib/templates');for(const [k,d] of Object.entries(t.DOCUMENTS)){if(!fs.existsSync('templates/'+d.template))throw new Error('missing template for '+k)}console.log('ok')"

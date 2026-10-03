@@ -42,6 +42,10 @@ what would settle it. Vague statements ("we believe users want a better experien
 It is twelve months from now and this failed. Everyone writes why, independently, before discussing.
 Only mitigations that actually change the plan count; note them in `decision-log.md`.
 
+Then seed the **risk register**: `scaffold risks`, one row per failure reason (likelihood, impact,
+mitigation, owner, the trigger that means "act now"). It stays live — later stages add rows, and
+Stage 13 reviews it before release.
+
 ## 5. Customer Validation Score
 
 Ten parameters, 1–5, each with an evidence grade and written reasoning, in the `backbone-cvs` block of

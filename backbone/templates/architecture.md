@@ -43,13 +43,26 @@ colliding — they are required at T3+ and harmless at T1/T2.
 - **Context:** <!-- what forces this decision -->
 - **Decision:** <!-- what we are doing -->
 - **Consequences:** <!-- what this costs us, what it rules out -->
+- **Run cost (T4):** <!-- monthly estimate at expected load, and what drives it -->
 - **Adversarial pass:** DL-###
+
+Security decisions (threat model, secrets, auth, data classification) live in `security.md` (T2+).
+
+## Domain glossary (T3+)
+
+One name per concept, used identically in code, interfaces, UI copy and docs — so parallel agents do not
+invent `Customer`, `Client` and `Account` for the same thing.
+
+| Term | Means | Not to be confused with | Used in |
+|---|---|---|---|
+| <!-- fill, or "not applicable at T1/T2" --> | | | |
 
 ## Module boundary map (T3+)
 
 Machine-readable ownership. `paths` must not overlap between modules — two agents are never assigned
 the same file. `interface_frozen` must be true before any module that depends on it starts.
-Validate with `backbone.js modules`.
+`"ui": true` marks a module that renders user interface: its agent is handed the design tokens from
+`design.md` as binding rules. Validate with `backbone.js modules`.
 
 ```backbone-modules
 {
@@ -59,6 +72,7 @@ Validate with `backbone.js modules`.
       "purpose": "one line",
       "paths": ["src/example/**"],
       "depends_on": [],
+      "ui": false,
       "interface_frozen": false
     }
   ]
