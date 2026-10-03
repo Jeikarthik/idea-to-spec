@@ -9,5 +9,10 @@
   },
   "scripts": {
     "test": "node --test tests/unit.test.js tests/cli.test.js tests/hooks.test.js tests/design-release.test.js"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jeikarthik/idea-to-spec.git"
+  },
+  "homepage": "https://github.com/Jeikarthik/idea-to-spec"
 }

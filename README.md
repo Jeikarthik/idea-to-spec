@@ -19,11 +19,11 @@ build against at once, and a genuine feedback loop back into the process after s
 ## Install
 
 ```
-/plugin marketplace add <github-user>/backbone-claude-plugin
+/plugin marketplace add Jeikarthik/idea-to-spec
 /plugin install backbone@backbone
 ```
 
-Or from a local clone: `/plugin marketplace add /path/to/backbone-claude-plugin`.
+Or from a local clone: `/plugin marketplace add /path/to/idea-to-spec`.
 Requires Node 18+ (already present wherever Claude Code runs). No dependencies.
 
 ## Start
